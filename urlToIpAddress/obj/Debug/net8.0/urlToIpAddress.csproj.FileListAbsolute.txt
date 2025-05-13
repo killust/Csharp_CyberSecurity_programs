@@ -1,0 +1,14 @@
+D:\fyp\softwares\testing codes\urlToIpAddress\bin\Debug\net8.0\urlToIpAddress.exe
+D:\fyp\softwares\testing codes\urlToIpAddress\bin\Debug\net8.0\urlToIpAddress.deps.json
+D:\fyp\softwares\testing codes\urlToIpAddress\bin\Debug\net8.0\urlToIpAddress.runtimeconfig.json
+D:\fyp\softwares\testing codes\urlToIpAddress\bin\Debug\net8.0\urlToIpAddress.dll
+D:\fyp\softwares\testing codes\urlToIpAddress\bin\Debug\net8.0\urlToIpAddress.pdb
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.GeneratedMSBuildEditorConfig.editorconfig
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.AssemblyInfoInputs.cache
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.AssemblyInfo.cs
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.csproj.CoreCompileInputs.cache
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.dll
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\refint\urlToIpAddress.dll
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.pdb
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\urlToIpAddress.genruntimeconfig.cache
+D:\fyp\softwares\testing codes\urlToIpAddress\obj\Debug\net8.0\ref\urlToIpAddress.dll

@@ -1,0 +1,154 @@
+using DnsClient;
+using DnsClient.Protocol;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Microsoft.Web.WebView2.WinForms;
+
+namespace WinFormsApp2
+{
+    public partial class Form3 : Form
+    {
+        private readonly HttpClient httpClient; // Declare httpClient as a class-level field
+
+        public Form3()
+        {
+            InitializeComponent();
+
+            // Initialize WebView2
+            InitializeWebView2();
+            httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler_DangerousAcceptAnyServerCertificateValidator
+            });
+        }
+
+        private bool HttpClientHandler_DangerousAcceptAnyServerCertificateValidator(HttpRequestMessage sender, X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // For testing purposes only; allow any SSL certificate
+            return true;
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            string domain = txtDomain.Text.Trim();
+
+            if (!string.IsNullOrEmpty(domain))
+            {
+                var dnsLookup = new LookupClient();
+                var result = await dnsLookup.QueryAsync(domain, QueryType.ANY);
+
+                // Clear previous results
+                txtResults.Clear();
+                txtFoundCNC.Clear();
+                txtOnline.Clear();
+
+                // Read subdomains from file
+                string[] subdomains = File.ReadAllLines("dns_wordlist/subdomains.txt");
+
+                foreach (var subdomain in subdomains)
+                {
+                    string fullDomain = $"{subdomain.Trim()}.{domain}";
+                    bool reported = false;
+
+                    try
+                    {
+                        // DNS Lookup
+                        var result2 = await dnsLookup.QueryAsync(fullDomain, QueryType.A);
+
+                        if (result2.Answers.Count > 0)
+                        {
+                            txtResults.AppendText($"{fullDomain} Exists\r\n");
+
+                            foreach (var record in result2.Answers)
+                            {
+                                if (record is ARecord aRecord)
+                                {
+                                    if (!reported)
+                                    {
+                                        reported = true;
+                                        var ipAddress = aRecord.Address.ToString();
+
+                                        try
+                                        {
+                                            // Attempt to connect to the IP address using HTTPS
+                                            var response = await httpClient.GetAsync($"https://{ipAddress}");
+
+                                            if (response.IsSuccessStatusCode)
+                                            {
+                                                txtOnline.AppendText($"{fullDomain} Exists (Online)\r\n");
+                                            }
+                                            else
+                                            {
+                                                txtFoundCNC.AppendText($"{fullDomain} Exists (DNS Record Found, But Could Not Connect)\r\n");
+                                            }
+                                        }
+                                        catch (HttpRequestException ex)
+                                        {
+                                            txtFoundCNC.AppendText($"{fullDomain} Exists (DNS Record Found, But Could Not Connect: {ex.Message})\r\n");
+                                            txtFoundCNC.AppendText(Environment.NewLine);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (DnsResponseException)
+                    {
+                        // Ignore DNS resolution errors
+                    }
+                }
+
+                txtResults.AppendText($"The attack surface consists of the following entry points\r\n");
+            }
+            else
+            {
+                MessageBox.Show("Please enter a domain name.");
+            }
+        }
+
+        private async void InitializeWebView2()
+        {
+            // Ensure WebView2 is initialized
+            await webView21.EnsureCoreWebView2Async(null);
+            webView21.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+        }
+
+        private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            string message = e.WebMessageAsString;
+            txtResults.AppendText($"WebView2 Message: {message}\r\n");
+        }
+
+        private async void CheckUrlWithWebView2(string url)
+        {
+            string jsScript = $@"
+                fetch('https://{url}')
+                .then(response => {{
+                    if (response.ok) {{
+                        window.chrome.webview.postMessage('Exists (Online)');
+                    }} else {{
+                        window.chrome.webview.postMessage('Exists (DNS Record Found, But Could Not Connect)');
+                    }}
+                }})
+                .catch(error => {{
+                    window.chrome.webview.postMessage('Exists (DNS Record Found, But Could Not Connect: ' + error.message + ')');
+                }});";
+
+            await webView21.ExecuteScriptAsync(jsScript);
+        }
+
+        private void btnDirecctURLBruteforce_Click(object sender, EventArgs e)
+        {
+            Form4 f4 = new Form4();
+            f4.Show();
+            Visible = false;
+        }
+
+        private void txtResults_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
